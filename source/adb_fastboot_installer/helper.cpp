@@ -2,9 +2,11 @@
 	Copyrights - ADB Fastboot Installer by hackslashX (Muhammad Fahad Baig)
 */
 
-// Helper.cpp - Helper functions containing various methods to assist
+// Helper.cpp - Helper functions containing various methods to assist 
+// TODO :: EASE DEPENDENCIES ON WINAPI AND USE STANDARD VERSIONS
 
 #include "package.hpp"
+#include <filesystem>
 
 namespace helperX
 {
@@ -178,6 +180,8 @@ namespace helperX
 			{
 				return true; // Download successfull
 			}
+			else
+				return false;
 		}
 		else
 		{
@@ -272,29 +276,48 @@ namespace helperX
 	*/
 	bool installationProcedure(void)
 	{
-		char windowsPathA[MAX_PATH];
-		GetWindowsDirectoryA(windowsPathA, MAX_PATH);
-		string windowsPath(windowsPathA);
+		string mPath(getenv("SystemDrive")); mPath += "\\hcX-af";
+		std::tr2::sys::remove_all(mPath);
+		std::tr2::sys::create_directory(mPath);
+		CopyFileA(string(current_path().string() + "\\adb.exe").c_str(), string(mPath + "\\adb.exe").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\fastboot.exe").c_str(), string(mPath + "\\fastboot.exe").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\AdbWinApi.dll").c_str(), string(mPath + "\\AdbWinApi.dll").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\AdbWinUsbApi.dll").c_str(), string(mPath + "\\AdbWinUsbApi.dll").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\libwinpthread-1.dll").c_str(), string(mPath + "\\libwinpthread-1.dll").c_str(), FALSE);
+		HKEY key;
+		if (RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\\"), &key) == ERROR_SUCCESS) {
+			DWORD size = 1300;
+			DWORD type = REG_EXPAND_SZ;
+			string curVal = "";
+			{
+				char data[1];
+				char *nData = NULL;
+				RegQueryValueEx(key, TEXT("Path"), NULL, &type, NULL, &size); // This first iteration gets the correct size
+				nData = new char[size+1];
+				RegQueryValueEx(key, TEXT("Path"), NULL, &type, (LPBYTE)(nData), &size);
+				// Loop through the entire data to remove redundant null chars
+				for (int i = 0; i < size; i++) {
+					if (nData[i] != '\0') 
+						curVal += nData[i];
+				}
+				delete[] nData;
+			}
+			// If the PATH already exists, don't re add
+			if (curVal.find("C:\\hcX-af\\;") == string::npos) {
+				curVal += ";C:\\hcX-af\\;";
+				size = curVal.length();
+				// Convert the string back to char*
+				char *newVal = new char[size + 1];
+				strncpy(newVal, curVal.c_str(), size);
+				RegSetValueExA(key, "Path", NULL, type, (LPBYTE)newVal, size);
+			}
+			RegCloseKey(key);
 
-		if (checkArch64() == TRUE) // 64-bit Operating System
-		{
-			CopyFileA(string(current_path().string() + "\\adb.exe").c_str(), string(windowsPath + "\\adb.exe").c_str(), FALSE);
-			CopyFileA(string(current_path().string() + "\\fastboot.exe").c_str(), string(windowsPath + "\\fastboot.exe").c_str(), FALSE);
-			CopyFileA(string(current_path().string() + "\\AdbWinApi.dll").c_str(), string(windowsPath + "\\SysWOW64\\AdbWinApi.dll").c_str(), FALSE);
-			CopyFileA(string(current_path().string() + "\\AdbWinUsbApi.dll").c_str(), string(windowsPath + "\\SysWOW64\\AdbWinUsbApi.dll").c_str(), FALSE);
-			CopyFileA(string(current_path().string() + "\\libwinpthread-1.dll").c_str(), string(windowsPath + "\\SysWOW64\\libwinpthread-1.dll").c_str(), FALSE);
-			return true;
+			// Update environment to reflect the new PATH changes
+			SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0,
+				(LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
 		}
-		else // 32-bit Operating System
-		{
-			CopyFileA(string(current_path().string() + "\\adb.exe").c_str(), string(windowsPath + "\\System32\\adb.exe").c_str(), FALSE);
-			CopyFileA(string(current_path().string() + "\\fastboot.exe").c_str(), string(windowsPath + "\\System32\\fastboot.exe").c_str(), FALSE);
-			CopyFileA(string(current_path().string() + "\\AdbWinApi.dll").c_str(), string(windowsPath + "\\System32\\AdbWinApi.dll").c_str(), FALSE);
-			CopyFileA(string(current_path().string() + "\\AdbWinUsbApi.dll").c_str(), string(windowsPath + "\\System32\\AdbWinUsbApi.dll").c_str(), FALSE);
-			CopyFileA(string(current_path().string() + "\\libwinpthread-1.dll").c_str(), string(windowsPath + "\\System32\\libwinpthread-1.dll").c_str(), FALSE);
-			return true;
-		}
-		return false; // Fail-safe
+		return true;
 	}
 
 	void cleaning(Package pkg)

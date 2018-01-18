@@ -20,10 +20,10 @@ void drawHeader(HANDLE h)
 	printf("╩ ╩═╩╝╚═╝  ┴ ┴┘└┘─┴┘  ╚  ╩ ╩╚═╝ ╩ ╚═╝╚═╝╚═╝ ╩   ┴┘└┘└─┘ ┴ ┴ ┴┴─┘┴─┘└─┘┴└─\n");
 	printf("──────────────────────────────────────────────────────────────────────────────\n");
 	SetConsoleTextAttribute(h, CYAN);
-	cout << "Developer: Muhammad Fahad Baig (hackslashX @github)\n";
-	cout << "Email Support: muhammad.fb.79@gmail.com\n";
-	cout << "Program Version: 0.1-alpha\n";
-	cout << "──────────────────────────────────────────────────────────────────────────────\n";
+	cout << "Developer: Muhammad Fahad Baig (hackslashX @github)" << endl;
+	cout << "Email Support: muhammad.fb.79@gmail.com" << endl;
+	cout << "Program Version: 0.3-beta" << endl;
+	printf("──────────────────────────────────────────────────────────────────────────────\n");
 }
 
 bool internetConnectionCheck(HANDLE h)
@@ -73,7 +73,7 @@ Package showRepositoryPackageVersion(HANDLE h)
 		SetConsoleTextAttribute(h, CYAN);
 		cout << "ADB Version: " << retPkg.adbVersion << endl;
 		cout << "Fastboot Version: " << retPkg.fastbootVersion << endl;
-		cout << "──────────────────────────────────────────────────────────────────────────────\n\n";
+		printf("──────────────────────────────────────────────────────────────────────────────\n\n");
 		return retPkg;
 	}
 }
@@ -164,7 +164,7 @@ void showDecompressingProcess(HANDLE h, Package pkg)
 void showInstallationProcess(HANDLE h, Package pkg)
 {
 	SetConsoleTextAttribute(h, WHITE);
-	cout << "[*] Copying extracted files to the required directories ... ";
+	cout << "[*] Copying files and updating environment ... ";
 	if (installationProcedure())
 	{
 		SetConsoleTextAttribute(h, GREEN);
