@@ -8,12 +8,14 @@
 #define PACKAGE_HPP
 
 #include <string>
+#include <algorithm>
 #include <Windows.h>
 #include <WinInet.h>
 #include <intrin.h>
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <SetupAPI.h>
 
 #include "zlib\unzip.h"
 
@@ -42,6 +44,7 @@ namespace helperX
 	bool downloadLatestVersionFromRepository(Package pkgD);
 	bool decompressRecievedPackage(Package pkg);
 	bool installationProcedure(void);
+	bool installDriver(char);
 	void cleaning(Package pkg);
 }
 
@@ -77,6 +80,7 @@ void showDownloadLatestVersion(HANDLE h, Package pkg);
 void showDecompressingProcess(HANDLE h, Package pkg);
 void showInstallationProcess(HANDLE h, Package pkg);
 void showCleaningProcess(HANDLE h, Package pkg);
+void showDriverInstall(HANDLE h);
 void showFinish(HANDLE h);
 
 #endif // ! PACKAGE_HPP

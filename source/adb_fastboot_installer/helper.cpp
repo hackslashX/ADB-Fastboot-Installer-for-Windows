@@ -220,6 +220,12 @@ namespace helperX
 				return false; // Return control to handle decompression error
 			}
 
+			// If filename is a folder, create it and continue
+			if (string(filename).find('//', string(filename).size()-1) != string::npos) {
+				std::tr2::sys::create_directory(current_path().string()+"//"+string(filename)+"//");
+				goto HERE;
+			}
+
 			// Dealing with file entries only
 			FILE *out = fopen(filename, "wb");
 			if (out == NULL)
@@ -252,6 +258,7 @@ namespace helperX
 			} while (error > 0);
 			
 			fclose(out);
+			HERE:
 			unzCloseCurrentFile(zipFile);
 
 			// Go to next entry
@@ -276,14 +283,17 @@ namespace helperX
 	*/
 	bool installationProcedure(void)
 	{
-		string mPath(getenv("SystemDrive")); mPath += "\\hcX-af";
+		string mPath(getenv("SystemDrive")); 
+		string oPath = mPath + "\\hcX-af\\";
+		mPath += "\\Program Files\\hcX-af\\";
 		std::tr2::sys::remove_all(mPath);
 		std::tr2::sys::create_directory(mPath);
-		CopyFileA(string(current_path().string() + "\\adb.exe").c_str(), string(mPath + "\\adb.exe").c_str(), FALSE);
-		CopyFileA(string(current_path().string() + "\\fastboot.exe").c_str(), string(mPath + "\\fastboot.exe").c_str(), FALSE);
-		CopyFileA(string(current_path().string() + "\\AdbWinApi.dll").c_str(), string(mPath + "\\AdbWinApi.dll").c_str(), FALSE);
-		CopyFileA(string(current_path().string() + "\\AdbWinUsbApi.dll").c_str(), string(mPath + "\\AdbWinUsbApi.dll").c_str(), FALSE);
-		CopyFileA(string(current_path().string() + "\\libwinpthread-1.dll").c_str(), string(mPath + "\\libwinpthread-1.dll").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\adb.exe").c_str(), string(mPath + "adb.exe").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\mke2fs.exe").c_str(), string(mPath + "mke2fs.exe").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\fastboot.exe").c_str(), string(mPath + "fastboot.exe").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\AdbWinApi.dll").c_str(), string(mPath + "AdbWinApi.dll").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\AdbWinUsbApi.dll").c_str(), string(mPath + "AdbWinUsbApi.dll").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\libwinpthread-1.dll").c_str(), string(mPath + "libwinpthread-1.dll").c_str(), FALSE);
 		HKEY key;
 		if (RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\\"), &key) == ERROR_SUCCESS) {
 			DWORD size = 1300;
@@ -302,9 +312,14 @@ namespace helperX
 				}
 				delete[] nData;
 			}
+			mPath = mPath + ";";
+			// Previous :: Remove old installer footprints
+			if (curVal.find(oPath) != string::npos) curVal.replace(curVal.find(oPath+";"), string(oPath+";").size(), "");
+			std::tr2::sys::remove_all(oPath);
+
 			// If the PATH already exists, don't re add
-			if (curVal.find("C:\\hcX-af\\;") == string::npos) {
-				curVal += ";C:\\hcX-af\\;";
+			if (curVal.find(mPath) == string::npos) {
+				curVal += ";"+mPath;
 				size = curVal.length();
 				// Convert the string back to char*
 				char *newVal = new char[size + 1];
@@ -323,6 +338,7 @@ namespace helperX
 	void cleaning(Package pkg)
 	{
 		DeleteFileA(string(current_path().string() + "\\adb.exe").c_str());
+		DeleteFileA(string(current_path().string() + "\\mke2fs.exe").c_str());
 		DeleteFileA(string(current_path().string() + "\\fastboot.exe").c_str());
 		DeleteFileA(string(current_path().string()+ "\\AdbWinApi.dll").c_str());
 		DeleteFileA(string(current_path().string() + "\\AdbWinUsbApi.dll").c_str());
@@ -334,5 +350,48 @@ namespace helperX
 		DeleteFileA(string(current_path().string() + "\\temp_fastbootVersion.tmp").c_str());
 		string pkgPath = "\\" + pkg.packageName;
 		if (pkg.packageName != "NULL") DeleteFileA(string(current_path().string() + pkgPath).c_str());
+	}
+
+	bool installDriver(char manChoice) {
+		string downloadPath{};
+		string downloadURL{};
+		if (manChoice == '1') {
+			downloadURL = "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/drivers/google-drivers.zip";
+			downloadPath = current_path().string() + "\\google-drivers.zip";
+		}
+		
+		if (InternetCheckConnection(L"http://www.github.com", FLAG_ICC_FORCE_CONNECTION, 0))
+		{
+			HRESULT dHr = URLDownloadToFileA(NULL, downloadURL.c_str(), downloadPath.c_str(), 0, NULL);
+
+			if (dHr != S_OK)	return false; // Download successfull
+		}
+		else
+		{
+			return false;
+		}
+
+		// Install Phase :: Google
+		if (manChoice == '1') {
+			Package googleDrv; googleDrv.packageName = "google-drivers.zip";
+			if (decompressRecievedPackage(googleDrv)) {
+				// Extraction Successful, begin instalation
+				STARTUPINFO info = { sizeof(info) };
+				PROCESS_INFORMATION processInfo;
+			
+				if (CreateProcess(L"C:\\Windows\\sysnative\\cmd.exe", L"C:\\Windows\\sysnnative\\cmd.exe /C C:\\Windows\\System32\\pnputil.exe -i -a .\\usb_driver\\android_winusb.inf", NULL, NULL, 0, CREATE_NO_WINDOW, NULL, NULL, &info, &processInfo))
+				{
+					WaitForSingleObject(processInfo.hProcess, INFINITE);
+					CloseHandle(processInfo.hProcess);
+					CloseHandle(processInfo.hThread);
+				}
+
+				// Install Done :: Cleaning
+				DeleteFileA(string(current_path().string() + "\\google-drivers.zip").c_str());
+				std::tr2::sys::remove_all(current_path().string()+"\\usb_driver");
+				return true;
+			}
+			else return false;
+		}
 	}
 }

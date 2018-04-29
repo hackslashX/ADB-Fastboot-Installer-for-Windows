@@ -10,7 +10,7 @@ using namespace helperX;
 
 int main(void)
 {
-	SetConsoleTitle(L"ADB and Fastboot Installer 0.1-alpha for Windows");
+	SetConsoleTitle(L"ADB and Fastboot Installer 1.0-stable for Windows");
 	HANDLE cmdH = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleOutputCP(CP_UTF8);
 
@@ -39,6 +39,9 @@ int main(void)
 
 	// Installation
 	showInstallationProcess(cmdH, netPkg);
+
+	// Driver Install
+	showDriverInstall(cmdH);
 
 	// Cleaning
 	showCleaningProcess(cmdH, netPkg);
