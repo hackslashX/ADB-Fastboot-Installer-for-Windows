@@ -22,7 +22,7 @@ void drawHeader(HANDLE h)
 	SetConsoleTextAttribute(h, CYAN);
 	cout << "Developer: Muhammad Fahad Baig (hackslashX @github)" << endl;
 	cout << "Email Support: muhammad.fb.79@gmail.com" << endl;
-	cout << "Program Version: 1.0-stable" << endl;
+	cout << "Program Version: 1.1-stable" << endl;
 	printf("──────────────────────────────────────────────────────────────────────────────\n");
 }
 
@@ -213,7 +213,7 @@ void showDriverInstall(HANDLE h) {
 	}
 	else if (manChoice == '0') {
 		SetConsoleTextAttribute(h, WHITE);
-		cout << "[*] No driver to install. Skipping ... ";
+		cout << "[*] No driver to install. Skipping ...\n";
 	}
 }
 

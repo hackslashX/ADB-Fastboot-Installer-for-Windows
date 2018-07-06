@@ -8,29 +8,15 @@
 #include "package.hpp"
 #include <filesystem>
 
+#define GOOGLE_DRIVER_URL "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/drivers/google-drivers.zip"
+#define LATEST_VERSION "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/latestversion"
+#define PACKAGE_URL "https://github.com/hackslashX/ADB-Fastboot-Installer-for-Windows/raw/master/versions/"
+#define ENV_SCRIPT_URL "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/script/RefreshEnv.cmd"
+
 namespace helperX
 {
 	using namespace std;
 	using namespace std::experimental::filesystem::v1;
-
-	/*
-		bool checkSystemArch(void)
-
-		A Windows only function that tells whether installed Windows OS is 32-bit or 64-bit.
-		http://blogs.msdn.com/oldnewthing/archive/2005/02/01/364563.aspx
-	*/
-	bool checkArch64(void)
-	{
-		#if defined(_WIN64)
-			return TRUE;  // 64-bit programs run only on Win64
-		#elif defined(_WIN32)
-		// 32-bit programs run on both 32-bit and 64-bit Windows so must sniff more
-		BOOL f64 = FALSE;
-			return IsWow64Process(GetCurrentProcess(), &f64) && f64;
-		#else
-			return FALSE; // Win64 does not support Win16
-		#endif
-	}
 
 	/*
 		bool checkSystemInstall(void)
@@ -133,7 +119,7 @@ namespace helperX
 		if (InternetCheckConnection(L"http://www.github.com", FLAG_ICC_FORCE_CONNECTION, 0))
 		{
 			string downloadPath = current_path().string() + "\\latestversion";
-			string downloadUrl = "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/latestversion";
+			string downloadUrl = LATEST_VERSION;
 			HRESULT dHr = URLDownloadToFileA(NULL, downloadUrl.c_str(), downloadPath.c_str(), 0, NULL);
 
 			if (dHr == S_OK)
@@ -150,16 +136,13 @@ namespace helperX
 				int sizeTrimmed = stoi(fileData) / 1000;
 				retPkg.packageSize = to_string(sizeTrimmed);
 				retPkg.packageName = retPkg.adbVersion + ".zip";
-				retPkg.downloadURL = "https://github.com/hackslashX/ADB-Fastboot-Installer-for-Windows/raw/master/versions/" + retPkg.packageName;
+				retPkg.downloadURL = PACKAGE_URL + retPkg.packageName;
 
 				return retPkg;
 			}
 		}
-		else
-		{
-			retPkg.packageName = "NULL";
-			return retPkg;
-		}
+		retPkg.packageName = "NULL";
+		return retPkg;
 	}
 
 	/*
@@ -180,13 +163,8 @@ namespace helperX
 			{
 				return true; // Download successfull
 			}
-			else
-				return false;
 		}
-		else
-		{
-			return false;
-		}
+		return false;
 	}
 
 	/*
@@ -300,7 +278,6 @@ namespace helperX
 			DWORD type = REG_EXPAND_SZ;
 			string curVal = "";
 			{
-				char data[1];
 				char *nData = NULL;
 				RegQueryValueEx(key, TEXT("Path"), NULL, &type, NULL, &size); // This first iteration gets the correct size
 				nData = new char[size+1];
@@ -329,12 +306,30 @@ namespace helperX
 			RegCloseKey(key);
 
 			// Update environment to reflect the new PATH changes
-			SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0,
-				(LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
+			// Relies on script by choco - the package manager for Windows
+			// https://github.com/chocolatey/choco
+			string downloadPath = current_path().string() + "\\RefreshEnv.cmd";
+			HRESULT dHr = URLDownloadToFileA(NULL, ENV_SCRIPT_URL, downloadPath.c_str(), 0, NULL);
+			if (dHr == S_OK) {
+				// Start script execution
+				STARTUPINFO info = { sizeof(info) };
+				PROCESS_INFORMATION processInfo;
+				if (CreateProcess(L"C:\\Windows\\sysnative\\cmd.exe", L"C:\\Windows\\sysnnative\\cmd.exe /C \\RefreshEnv.cmd", NULL, NULL, 0, CREATE_NO_WINDOW, NULL, NULL, &info, &processInfo))
+				{
+					WaitForSingleObject(processInfo.hProcess, INFINITE);
+					CloseHandle(processInfo.hProcess);
+					CloseHandle(processInfo.hThread);
+				}
+			}
 		}
 		return true;
 	}
 
+	/*
+	void cleaning(Package pkg)
+
+	Cleans the local files downloaded and created by the installer
+	*/
 	void cleaning(Package pkg)
 	{
 		DeleteFileA(string(current_path().string() + "\\adb.exe").c_str());
@@ -348,15 +343,21 @@ namespace helperX
 		DeleteFileA(string(current_path().string() + "\\temp_installStatus.tmp").c_str());
 		DeleteFileA(string(current_path().string() + "\\temp_adbVersion.tmp").c_str());
 		DeleteFileA(string(current_path().string() + "\\temp_fastbootVersion.tmp").c_str());
+		DeleteFileA(string(current_path().string() + "\\RefreshEnv.cmd").c_str());
 		string pkgPath = "\\" + pkg.packageName;
 		if (pkg.packageName != "NULL") DeleteFileA(string(current_path().string() + pkgPath).c_str());
 	}
 
+	/*
+	bool installDriver(char manChoice)
+
+	A nifty utility function to install manufacturer drivers
+	*/
 	bool installDriver(char manChoice) {
 		string downloadPath{};
 		string downloadURL{};
 		if (manChoice == '1') {
-			downloadURL = "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/drivers/google-drivers.zip";
+			downloadURL = GOOGLE_DRIVER_URL;
 			downloadPath = current_path().string() + "\\google-drivers.zip";
 		}
 		
@@ -367,9 +368,7 @@ namespace helperX
 			if (dHr != S_OK)	return false; // Download successfull
 		}
 		else
-		{
 			return false;
-		}
 
 		// Install Phase :: Google
 		if (manChoice == '1') {
@@ -391,7 +390,7 @@ namespace helperX
 				std::tr2::sys::remove_all(current_path().string()+"\\usb_driver");
 				return true;
 			}
-			else return false;
 		}
+		return false;
 	}
 }
