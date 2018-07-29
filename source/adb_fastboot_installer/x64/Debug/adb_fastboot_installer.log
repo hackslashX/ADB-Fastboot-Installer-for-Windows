@@ -1,0 +1,34 @@
+﻿  console.cpp
+  helper.cpp
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(204): warning C4305: 'argument': truncation from 'int' to 'const char'
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(204): warning C4309: 'argument': truncation of constant value
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(205): warning C4996: 'std::tr2': warning STL4018: The non-Standard std::tr2::sys namespace is deprecated and will be REMOVED. It is superseded by std::experimental::filesystem. You can define _SILENCE_TR2_SYS_NAMESPACE_DEPRECATION_WARNING to acknowledge that you have received this warning.
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.14.26428\include\experimental\filesystem(3188): note: see declaration of 'std::tr2'
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(210): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17134.0\ucrt\stdio.h(208): note: see declaration of 'fopen'
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(269): warning C4996: 'std::tr2': warning STL4018: The non-Standard std::tr2::sys namespace is deprecated and will be REMOVED. It is superseded by std::experimental::filesystem. You can define _SILENCE_TR2_SYS_NAMESPACE_DEPRECATION_WARNING to acknowledge that you have received this warning.
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.14.26428\include\experimental\filesystem(3188): note: see declaration of 'std::tr2'
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(270): warning C4996: 'std::tr2': warning STL4018: The non-Standard std::tr2::sys namespace is deprecated and will be REMOVED. It is superseded by std::experimental::filesystem. You can define _SILENCE_TR2_SYS_NAMESPACE_DEPRECATION_WARNING to acknowledge that you have received this warning.
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.14.26428\include\experimental\filesystem(3188): note: see declaration of 'std::tr2'
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(288): warning C4018: '<': signed/unsigned mismatch
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(297): warning C4996: 'std::tr2': warning STL4018: The non-Standard std::tr2::sys namespace is deprecated and will be REMOVED. It is superseded by std::experimental::filesystem. You can define _SILENCE_TR2_SYS_NAMESPACE_DEPRECATION_WARNING to acknowledge that you have received this warning.
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.14.26428\include\experimental\filesystem(3188): note: see declaration of 'std::tr2'
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(302): warning C4267: '=': conversion from 'size_t' to 'DWORD', possible loss of data
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(266): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17134.0\ucrt\stdlib.h(1191): note: see declaration of 'getenv'
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(305): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17134.0\ucrt\string.h(338): note: see declaration of 'strncpy'
+h:\git\adb-fastboot-installer-for-windows\source\adb_fastboot_installer\helper.cpp(386): warning C4996: 'std::tr2': warning STL4018: The non-Standard std::tr2::sys namespace is deprecated and will be REMOVED. It is superseded by std::experimental::filesystem. You can define _SILENCE_TR2_SYS_NAMESPACE_DEPRECATION_WARNING to acknowledge that you have received this warning.
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.14.26428\include\experimental\filesystem(3188): note: see declaration of 'std::tr2'
+  ui.cpp
+  Generating Code...
+helper.obj : error LNK2019: unresolved external symbol unzOpen referenced in function "bool __cdecl helperX::decompressRecievedPackage(struct Package)" (?decompressRecievedPackage@helperX@@YA_NUPackage@@@Z)
+helper.obj : error LNK2019: unresolved external symbol unzClose referenced in function "bool __cdecl helperX::decompressRecievedPackage(struct Package)" (?decompressRecievedPackage@helperX@@YA_NUPackage@@@Z)
+helper.obj : error LNK2019: unresolved external symbol unzGetGlobalInfo referenced in function "bool __cdecl helperX::decompressRecievedPackage(struct Package)" (?decompressRecievedPackage@helperX@@YA_NUPackage@@@Z)
+helper.obj : error LNK2019: unresolved external symbol unzGoToNextFile referenced in function "bool __cdecl helperX::decompressRecievedPackage(struct Package)" (?decompressRecievedPackage@helperX@@YA_NUPackage@@@Z)
+helper.obj : error LNK2019: unresolved external symbol unzGetCurrentFileInfo referenced in function "bool __cdecl helperX::decompressRecievedPackage(struct Package)" (?decompressRecievedPackage@helperX@@YA_NUPackage@@@Z)
+helper.obj : error LNK2019: unresolved external symbol unzOpenCurrentFile referenced in function "bool __cdecl helperX::decompressRecievedPackage(struct Package)" (?decompressRecievedPackage@helperX@@YA_NUPackage@@@Z)
+helper.obj : error LNK2019: unresolved external symbol unzCloseCurrentFile referenced in function "bool __cdecl helperX::decompressRecievedPackage(struct Package)" (?decompressRecievedPackage@helperX@@YA_NUPackage@@@Z)
+helper.obj : error LNK2019: unresolved external symbol unzReadCurrentFile referenced in function "bool __cdecl helperX::decompressRecievedPackage(struct Package)" (?decompressRecievedPackage@helperX@@YA_NUPackage@@@Z)
+H:\Git\ADB-Fastboot-Installer-for-Windows\source\adb_fastboot_installer\zlib\lib\zlibstat.lib : warning LNK4272: library machine type 'x86' conflicts with target machine type 'x64'
+H:\Git\ADB-Fastboot-Installer-for-Windows\source\x64\Debug\adb_fastboot_installer.exe : fatal error LNK1120: 8 unresolved externals

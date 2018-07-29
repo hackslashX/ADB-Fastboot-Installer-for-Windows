@@ -36,7 +36,6 @@ struct Package
 
 namespace helperX
 {
-	bool checkArch64(void);
 	bool checkSystemInstall(void);
 	Package checkExistingVersion(void);
 	void deleteExistingInstall(void);
@@ -44,7 +43,7 @@ namespace helperX
 	bool downloadLatestVersionFromRepository(Package pkgD);
 	bool decompressRecievedPackage(Package pkg);
 	bool installationProcedure(void);
-	bool installDriver(char);
+	bool installDriver(int,HANDLE);
 	void cleaning(Package pkg);
 }
 
