@@ -22,7 +22,7 @@ void drawHeader(HANDLE h)
 	SetConsoleTextAttribute(h, CYAN);
 	cout << "Developer: Muhammad Fahad Baig (hackslashX @github)" << endl;
 	cout << "Email Support: muhammad.fb.79@gmail.com" << endl;
-	cout << "Program Version: 1.1-stable" << endl;
+	cout << "Program Version: 1.2-stable" << endl;
 	printf("──────────────────────────────────────────────────────────────────────────────\n");
 }
 
@@ -195,25 +195,22 @@ void showDriverInstall(HANDLE h) {
 	SetConsoleTextAttribute(h, WHITE);
 	cout << "[*] Select the manufacturer's USB drivers to install (enter 0 to skip):\n";
 	SetConsoleTextAttribute(h, YELLOW);
-	char manChoice;
-	cout << "(1) Google\tYour Choice: ";
+	int manChoice;
+	cout << "(1) Google\t(2) Huawei\tYour Choice: ";
 	SetConsoleTextAttribute(h, BLUE);
 	cin >> manChoice;
-	if (manChoice == '1') {
-		SetConsoleTextAttribute(h, WHITE);
-		cout << "[*] Downloading and installing Google USB drivers ... ";
-		if (installDriver(manChoice)) {
-			SetConsoleTextAttribute(h, GREEN);
-			cout << "[DONE]\n";
-		}
-		else {
-			SetConsoleTextAttribute(h, RED);
-			cout << "[FAILED]\n";
-		}
-	}
-	else if (manChoice == '0') {
+	if (manChoice != 1 && manChoice != 2) {
 		SetConsoleTextAttribute(h, WHITE);
 		cout << "[*] No driver to install. Skipping ...\n";
+		return;
+	}
+	if (installDriver(manChoice, h)) {
+		SetConsoleTextAttribute(h, GREEN);
+		cout << "[DONE]\n";
+	}
+	else {
+		SetConsoleTextAttribute(h, RED);
+		cout << "[FAILED]\n";
 	}
 }
 

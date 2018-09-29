@@ -9,6 +9,7 @@
 #include <filesystem>
 
 #define GOOGLE_DRIVER_URL "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/drivers/google-drivers.zip"
+#define HUAWEI_URL "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/drivers/huawei-drivers.zip"
 #define LATEST_VERSION "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/latestversion"
 #define PACKAGE_URL "https://github.com/hackslashX/ADB-Fastboot-Installer-for-Windows/raw/master/versions/"
 #define ENV_SCRIPT_URL "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/script/RefreshEnv.cmd"
@@ -26,7 +27,7 @@ namespace helperX
 	bool checkSystemInstall(void)
 	{
 		system("where adb 1> temp_installStatus.tmp 2>&1");
-		
+
 		fstream logFile;
 		logFile.open("temp_installStatus.tmp", ios::in);
 		string logData{};
@@ -83,6 +84,7 @@ namespace helperX
 	{
 		fstream logFile;
 		logFile.open("temp_installStatus.tmp", ios::in);
+		system("adb kill-server 1> nul 2>&1");
 
 		while (!logFile.eof())
 		{
@@ -199,8 +201,8 @@ namespace helperX
 			}
 
 			// If filename is a folder, create it and continue
-			if (string(filename).find('//', string(filename).size()-1) != string::npos) {
-				std::tr2::sys::create_directory(current_path().string()+"//"+string(filename)+"//");
+			if (string(filename).find('//', string(filename).size() - 1) != string::npos) {
+				std::tr2::sys::create_directory(current_path().string() + "//" + string(filename) + "//");
 				goto HERE;
 			}
 
@@ -234,9 +236,9 @@ namespace helperX
 					fwrite(rdBuff, error, 1, out);
 				}
 			} while (error > 0);
-			
+
 			fclose(out);
-			HERE:
+		HERE:
 			unzCloseCurrentFile(zipFile);
 
 			// Go to next entry
@@ -261,7 +263,7 @@ namespace helperX
 	*/
 	bool installationProcedure(void)
 	{
-		string mPath(getenv("SystemDrive")); 
+		string mPath(getenv("SystemDrive"));
 		string oPath = mPath + "\\hcX-af\\";
 		mPath += "\\Program Files\\hcX-af\\";
 		std::tr2::sys::remove_all(mPath);
@@ -280,23 +282,23 @@ namespace helperX
 			{
 				char *nData = NULL;
 				RegQueryValueEx(key, TEXT("Path"), NULL, &type, NULL, &size); // This first iteration gets the correct size
-				nData = new char[size+1];
+				nData = new char[size + 1];
 				RegQueryValueEx(key, TEXT("Path"), NULL, &type, (LPBYTE)(nData), &size);
 				// Loop through the entire data to remove redundant null chars
 				for (int i = 0; i < size; i++) {
-					if (nData[i] != '\0') 
+					if (nData[i] != '\0')
 						curVal += nData[i];
 				}
 				delete[] nData;
 			}
 			mPath = mPath + ";";
 			// Previous :: Remove old installer footprints
-			if (curVal.find(oPath) != string::npos) curVal.replace(curVal.find(oPath+";"), string(oPath+";").size(), "");
+			if (curVal.find(oPath) != string::npos) curVal.replace(curVal.find(oPath + ";"), string(oPath + ";").size(), "");
 			std::tr2::sys::remove_all(oPath);
 
 			// If the PATH already exists, don't re add
 			if (curVal.find(mPath) == string::npos) {
-				curVal += ";"+mPath;
+				curVal += ";" + mPath;
 				size = curVal.length();
 				// Convert the string back to char*
 				char *newVal = new char[size + 1];
@@ -335,7 +337,7 @@ namespace helperX
 		DeleteFileA(string(current_path().string() + "\\adb.exe").c_str());
 		DeleteFileA(string(current_path().string() + "\\mke2fs.exe").c_str());
 		DeleteFileA(string(current_path().string() + "\\fastboot.exe").c_str());
-		DeleteFileA(string(current_path().string()+ "\\AdbWinApi.dll").c_str());
+		DeleteFileA(string(current_path().string() + "\\AdbWinApi.dll").c_str());
 		DeleteFileA(string(current_path().string() + "\\AdbWinUsbApi.dll").c_str());
 		DeleteFileA(string(current_path().string() + "\\libwinpthread-1.dll").c_str());
 
@@ -353,31 +355,25 @@ namespace helperX
 
 	A nifty utility function to install manufacturer drivers
 	*/
-	bool installDriver(char manChoice) {
+	bool installDriver(int manChoice, HANDLE h) {
 		string downloadPath{};
 		string downloadURL{};
-		if (manChoice == '1') {
+		HRESULT dHr;
+		Package drv;
+		switch (manChoice) {
+		case 1:
+			SetConsoleTextAttribute(h, ConsoleForeground::WHITE);
+			cout << "[*] Downloading and installing Google USB drivers ... ";
 			downloadURL = GOOGLE_DRIVER_URL;
 			downloadPath = current_path().string() + "\\google-drivers.zip";
-		}
-		
-		if (InternetCheckConnection(L"http://www.github.com", FLAG_ICC_FORCE_CONNECTION, 0))
-		{
-			HRESULT dHr = URLDownloadToFileA(NULL, downloadURL.c_str(), downloadPath.c_str(), 0, NULL);
-
-			if (dHr != S_OK)	return false; // Download successfull
-		}
-		else
-			return false;
-
-		// Install Phase :: Google
-		if (manChoice == '1') {
-			Package googleDrv; googleDrv.packageName = "google-drivers.zip";
-			if (decompressRecievedPackage(googleDrv)) {
+			dHr = URLDownloadToFileA(NULL, downloadURL.c_str(), downloadPath.c_str(), 0, NULL);
+			if (dHr != S_OK) return false;
+			drv.packageName = "google-drivers.zip";
+			if (decompressRecievedPackage(drv)) {
 				// Extraction Successful, begin instalation
 				STARTUPINFO info = { sizeof(info) };
 				PROCESS_INFORMATION processInfo;
-			
+
 				if (CreateProcess(L"C:\\Windows\\sysnative\\cmd.exe", L"C:\\Windows\\sysnnative\\cmd.exe /C C:\\Windows\\System32\\pnputil.exe -i -a .\\usb_driver\\android_winusb.inf", NULL, NULL, 0, CREATE_NO_WINDOW, NULL, NULL, &info, &processInfo))
 				{
 					WaitForSingleObject(processInfo.hProcess, INFINITE);
@@ -387,10 +383,41 @@ namespace helperX
 
 				// Install Done :: Cleaning
 				DeleteFileA(string(current_path().string() + "\\google-drivers.zip").c_str());
-				std::tr2::sys::remove_all(current_path().string()+"\\usb_driver");
+				std::tr2::sys::remove_all(current_path().string() + "\\usb_driver");
 				return true;
 			}
+			else return false;
+
+		case 2:
+			SetConsoleTextAttribute(h, ConsoleForeground::WHITE);
+			cout << "[*] Downloading and installing Huawei USB drivers ... ";
+			downloadURL = HUAWEI_URL;
+			downloadPath = current_path().string() + "\\huawei-drivers.zip";
+			dHr = URLDownloadToFileA(NULL, downloadURL.c_str(), downloadPath.c_str(), 0, NULL);
+			if (dHr != S_OK) return false;
+			drv.packageName = "huawei-drivers.zip";
+			if (decompressRecievedPackage(drv)) {
+				// Extraction Successful, begin instalation
+				STARTUPINFO info = { sizeof(info) };
+				PROCESS_INFORMATION processInfo;
+
+				if (CreateProcess(L".\\all\\DriverSetup.exe", L".\\all\\DriverSetup.exe", NULL, NULL, 0, CREATE_NO_WINDOW, NULL, NULL, &info, &processInfo))
+				{
+					WaitForSingleObject(processInfo.hProcess, INFINITE);
+					CloseHandle(processInfo.hProcess);
+					CloseHandle(processInfo.hThread);
+				}
+
+				// Install Done :: Cleaning
+				DeleteFileA(string(current_path().string() + "\\huawei-drivers.zip").c_str());
+				std::tr2::sys::remove_all(current_path().string() + "\\all");
+				DeleteFileA(string(current_path().string() + "\\driverinfo.xml").c_str());
+				return true;
+				}
+				else return false;
+
+			default:
+				return false;
 		}
-		return false;
 	}
 }

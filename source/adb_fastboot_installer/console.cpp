@@ -10,7 +10,7 @@ using namespace helperX;
 
 int main(void)
 {
-	SetConsoleTitle(L"ADB and Fastboot Installer 1.0-stable for Windows");
+	SetConsoleTitle(L"ADB and Fastboot Installer 1.2-stable for Windows");
 	HANDLE cmdH = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleOutputCP(CP_UTF8);
 
@@ -24,7 +24,7 @@ int main(void)
 	// Draw Header
 	drawHeader(cmdH);
 
-	// Querry ADB and Fastboot Version from Github Repository
+	// Query ADB and Fastboot Version from Github Repository
 	Package netPkg;
 	netPkg = showRepositoryPackageVersion(cmdH);
 
