@@ -22,8 +22,8 @@
 #pragma comment(lib, "Wininet.lib")
 #pragma comment(lib, "urlmon.lib")
 
-#define MAX_FILENAME 512
-#define READ_SIZE 8192
+constexpr auto MAX_FILENAME = 512;
+constexpr auto READ_SIZE = 8192;
 
 struct Package
 {

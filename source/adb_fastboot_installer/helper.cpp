@@ -6,18 +6,16 @@
 // TODO :: EASE DEPENDENCIES ON WINAPI AND USE STANDARD VERSIONS
 
 #include "package.hpp"
-#include <filesystem>
 
-#define GOOGLE_DRIVER_URL "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/drivers/google-drivers.zip"
-#define HUAWEI_URL "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/drivers/huawei-drivers.zip"
-#define LATEST_VERSION "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/latestversion"
-#define PACKAGE_URL "https://github.com/hackslashX/ADB-Fastboot-Installer-for-Windows/raw/master/versions/"
-#define ENV_SCRIPT_URL "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/script/RefreshEnv.cmd"
+constexpr auto GOOGLE_DRIVER_URL = "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/drivers/google-drivers.zip";
+constexpr auto HUAWEI_URL = "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/drivers/huawei-drivers.zip";
+constexpr auto LATEST_VERSION = "https://raw.githubusercontent.com/hackslashX/ADB-Fastboot-Installer-for-Windows/master/versions/latestversion";
+constexpr auto PACKAGE_URL = "https://github.com/hackslashX/ADB-Fastboot-Installer-for-Windows/raw/master/versions/";
 
 namespace helperX
 {
 	using namespace std;
-	using namespace std::experimental::filesystem::v1;
+	using namespace std::filesystem;
 
 	/*
 		bool checkSystemInstall(void)
@@ -179,7 +177,7 @@ namespace helperX
 		unzFile zipFile = unzOpen(pkg.packageName.c_str());
 
 		// Char buffer to hold read data from zip File
-		voidp rdBuff[READ_SIZE];
+		voidp *rdBuff = new voidp[READ_SIZE];
 
 		// Load Information about Zip File
 		unz_global_info zipGlobalInfo;
@@ -202,12 +200,13 @@ namespace helperX
 
 			// If filename is a folder, create it and continue
 			if (string(filename).find('//', string(filename).size() - 1) != string::npos) {
-				std::tr2::sys::create_directory(current_path().string() + "//" + string(filename) + "//");
+				create_directory(current_path().string() + "//" + string(filename) + "//");
 				goto HERE;
 			}
 
 			// Dealing with file entries only
-			FILE *out = fopen(filename, "wb");
+			FILE* out;
+			fopen_s(&out, filename, "wb");
 			if (out == NULL)
 			{
 				unzClose(zipFile);
@@ -263,11 +262,14 @@ namespace helperX
 	*/
 	bool installationProcedure(void)
 	{
-		string mPath(getenv("SystemDrive"));
+		char* pValue;
+		_dupenv_s(&pValue, NULL, "SystemDrive");
+		string mPath(pValue);
+		free(pValue);
 		string oPath = mPath + "\\hcX-af\\";
 		mPath += "\\Program Files\\hcX-af\\";
-		std::tr2::sys::remove_all(mPath);
-		std::tr2::sys::create_directory(mPath);
+		remove_all(mPath);
+		create_directory(mPath);
 		CopyFileA(string(current_path().string() + "\\adb.exe").c_str(), string(mPath + "adb.exe").c_str(), FALSE);
 		CopyFileA(string(current_path().string() + "\\mke2fs.exe").c_str(), string(mPath + "mke2fs.exe").c_str(), FALSE);
 		CopyFileA(string(current_path().string() + "\\fastboot.exe").c_str(), string(mPath + "fastboot.exe").c_str(), FALSE);
@@ -285,7 +287,7 @@ namespace helperX
 				nData = new char[size + 1];
 				RegQueryValueEx(key, TEXT("Path"), NULL, &type, (LPBYTE)(nData), &size);
 				// Loop through the entire data to remove redundant null chars
-				for (int i = 0; i < size; i++) {
+				for (signed int i = 0; i < size; i++) {
 					if (nData[i] != '\0')
 						curVal += nData[i];
 				}
@@ -294,7 +296,7 @@ namespace helperX
 			mPath = mPath + ";";
 			// Previous :: Remove old installer footprints
 			if (curVal.find(oPath) != string::npos) curVal.replace(curVal.find(oPath + ";"), string(oPath + ";").size(), "");
-			std::tr2::sys::remove_all(oPath);
+			remove_all(oPath);
 
 			// If the PATH already exists, don't re add
 			if (curVal.find(mPath) == string::npos) {
@@ -302,27 +304,13 @@ namespace helperX
 				size = curVal.length();
 				// Convert the string back to char*
 				char *newVal = new char[size + 1];
-				strncpy(newVal, curVal.c_str(), size);
+				strncpy_s(newVal, size+1, curVal.c_str(), size);
 				RegSetValueExA(key, "Path", NULL, type, (LPBYTE)newVal, size);
 			}
 			RegCloseKey(key);
 
-			// Update environment to reflect the new PATH changes
-			// Relies on script by choco - the package manager for Windows
-			// https://github.com/chocolatey/choco
-			string downloadPath = current_path().string() + "\\RefreshEnv.cmd";
-			HRESULT dHr = URLDownloadToFileA(NULL, ENV_SCRIPT_URL, downloadPath.c_str(), 0, NULL);
-			if (dHr == S_OK) {
-				// Start script execution
-				STARTUPINFO info = { sizeof(info) };
-				PROCESS_INFORMATION processInfo;
-				if (CreateProcess(L"C:\\Windows\\sysnative\\cmd.exe", L"C:\\Windows\\sysnnative\\cmd.exe /C \\RefreshEnv.cmd", NULL, NULL, 0, CREATE_NO_WINDOW, NULL, NULL, &info, &processInfo))
-				{
-					WaitForSingleObject(processInfo.hProcess, INFINITE);
-					CloseHandle(processInfo.hProcess);
-					CloseHandle(processInfo.hThread);
-				}
-			}
+			SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, 0,
+				(LPARAM)L"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
 		}
 		return true;
 	}
@@ -383,7 +371,7 @@ namespace helperX
 
 				// Install Done :: Cleaning
 				DeleteFileA(string(current_path().string() + "\\google-drivers.zip").c_str());
-				std::tr2::sys::remove_all(current_path().string() + "\\usb_driver");
+				remove_all(current_path().string() + "\\usb_driver");
 				return true;
 			}
 			else return false;
@@ -410,7 +398,7 @@ namespace helperX
 
 				// Install Done :: Cleaning
 				DeleteFileA(string(current_path().string() + "\\huawei-drivers.zip").c_str());
-				std::tr2::sys::remove_all(current_path().string() + "\\all");
+				remove_all(current_path().string() + "\\all");
 				DeleteFileA(string(current_path().string() + "\\driverinfo.xml").c_str());
 				return true;
 				}
