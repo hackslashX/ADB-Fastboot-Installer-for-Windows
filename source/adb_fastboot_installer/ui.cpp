@@ -22,7 +22,7 @@ void drawHeader(HANDLE h)
 	SetConsoleTextAttribute(h, CYAN);
 	cout << "Developer: Muhammad Fahad Baig (hackslashX @github)" << endl;
 	cout << "Email Support: muhammad.fb.79@gmail.com" << endl;
-	cout << "Program Version: 1.2-stable" << endl;
+	cout << "Program Version: 1.3-stable" << endl;
 	printf("──────────────────────────────────────────────────────────────────────────────\n");
 }
 

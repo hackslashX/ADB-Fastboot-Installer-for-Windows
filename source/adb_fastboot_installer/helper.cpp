@@ -272,6 +272,8 @@ namespace helperX
 		create_directory(mPath);
 		CopyFileA(string(current_path().string() + "\\adb.exe").c_str(), string(mPath + "adb.exe").c_str(), FALSE);
 		CopyFileA(string(current_path().string() + "\\mke2fs.exe").c_str(), string(mPath + "mke2fs.exe").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\mke2fs.conf").c_str(), string(mPath + "mke2fs.conf").c_str(), FALSE);
+		CopyFileA(string(current_path().string() + "\\make_f2fs.exe").c_str(), string(mPath + "make_f2fs.exe").c_str(), FALSE);
 		CopyFileA(string(current_path().string() + "\\fastboot.exe").c_str(), string(mPath + "fastboot.exe").c_str(), FALSE);
 		CopyFileA(string(current_path().string() + "\\AdbWinApi.dll").c_str(), string(mPath + "AdbWinApi.dll").c_str(), FALSE);
 		CopyFileA(string(current_path().string() + "\\AdbWinUsbApi.dll").c_str(), string(mPath + "AdbWinUsbApi.dll").c_str(), FALSE);
@@ -324,6 +326,8 @@ namespace helperX
 	{
 		DeleteFileA(string(current_path().string() + "\\adb.exe").c_str());
 		DeleteFileA(string(current_path().string() + "\\mke2fs.exe").c_str());
+		DeleteFileA(string(current_path().string() + "\\mke2fs.conf").c_str());
+		DeleteFileA(string(current_path().string() + "\\make_f2fs.exe").c_str());
 		DeleteFileA(string(current_path().string() + "\\fastboot.exe").c_str());
 		DeleteFileA(string(current_path().string() + "\\AdbWinApi.dll").c_str());
 		DeleteFileA(string(current_path().string() + "\\AdbWinUsbApi.dll").c_str());
